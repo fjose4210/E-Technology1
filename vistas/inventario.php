@@ -76,50 +76,61 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
 <head>
     <meta charset="UTF-8">
     <title>Inventario</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
 </head>
 <body>
     <h1>Inventario</h1>
 
-    <?php if (isset($error)) echo "<p>$error</p>"; ?>
-    <?php if (isset($success)) echo "<p>$success</p>"; ?>
-    <?php if (isset($success_restock)) echo "<p>$success_restock</p>"; ?>
-
+    <?php if (isset($error)):?>
+    <div class="alert alert-danger"><?php echo "<p>$error</p>"; ?></div>
+    <?php endif;?>
+    <?php if (isset($success)):?>
+    <div class="alert alert-danger"><?php echo "<p>$success</p>"; ?></div>
+    <?php endif;?>
+    <?php if (isset($success_restock)):?>
+    <div class="alert alert-danger"><?php echo "<p>$success_restock</p>"; ?></div>
+    <?php endif;?>
     <!-- Formulario para agregar nuevo producto -->
+    <div class = "container mt-5">
     <h2>Agregar Producto</h2>
     <form method="POST">
-        <label for="nombre">Nombre:</label><br>
-        <input type="text" name="nombre" required><br>
-        <label for="categoria">Categoría:</label><br>
-        <input type="text" name="categoria" required><br>
-        <label for="cantidad_producto">Cantidad:</label><br>
-        <input type="number" name="cantidad_producto" min="1" required><br>
-        <label for="precio">Precio:</label><br>
-        <input type="number" name="precio" step="0.01" required><br><br>
-        <button type="submit" name="agregar_producto">Agregar Producto</button>
+        <label class="form-label" for="nombre">Nombre:</label><br>
+        <input class="form-control" type="text" name="nombre" required><br>
+        <label class="form-label" for="categoria">Categoría:</label><br>
+        <input class="form-control" type="text" name="categoria" required><br>
+        <label class="form-label" for="cantidad_producto">Cantidad:</label><br>
+        <input class="form-control" type="number" name="cantidad_producto" min="1" required><br>
+        <label class="form-label" for="precio">Precio:</label><br>
+        <input class="form-control" type="number" name="precio" step="0.01" required><br><br>
+        <button class="btn btn-primary" type="submit" name="agregar_producto">Agregar Producto</button>
     </form>
+    </div>
 
     <!-- Formulario para Restock (reposicion de productos) -->
+    <div class = "container mt-5">
     <h2>Restock (Reposición de Stock)</h2>
     <form method="POST">
-        <label for="id_producto">Producto:</label><br>
-        <select name="id_producto" required>
+        <label class="form-label" for="id_producto">Producto:</label><br>
+        <select class="form-control" name="id_producto" required>
             <?php foreach ($productos as $producto): ?>
                 <option value="<?= $producto['id'] ?>"><?= $producto['nombre'] ?></option>
             <?php endforeach; ?>
         </select><br>
-        <label for="cantidad_restock">Cantidad a Reponer:</label><br>
-        <input type="number" name="cantidad_restock" min="1" required><br><br>
-        <button type="submit" name="restock">Reponer Stock</button>
+        <label class="form-label" for="cantidad_restock">Cantidad a Reponer:</label><br>
+        <input class="form-control" type="number" name="cantidad_restock" min="1" required><br><br>
+        <button class="btn btn-primary" type="submit" name="restock">Reponer Stock</button>
     </form>
+    </div>
 
+    <div class = "container mt-5">
     <h2>Buscar Producto</h2>
     <form method="GET">
-        <input type="text" name="search" placeholder="Buscar..." value="<?= isset($_GET['search']) ? $_GET['search'] : '' ?>">
-        <button type="submit">Buscar</button>
+        <input class="form-control" type="text" name="search" placeholder="Buscar..." value="<?= isset($_GET['search']) ? $_GET['search'] : '' ?>">
+        <button class="btn btn-primary" type="submit">Buscar</button>
     </form>
 
     <h2>Productos en Inventario</h2>
-    <table border="1">
+    <table border="1" class="table table-bordered table-striped">
         <thead>
             <tr>
                 <th>Producto</th>
@@ -138,17 +149,19 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
                     <td>$<?= number_format($producto['precio'], 2) ?></td>
                     <td>
                         <form method="POST" action="">
-                            <input type="hidden" name="id_producto" value="<?= $producto['id'] ?>">
-                            <label for="cantidad">Cantidad:</label>
-                            <input type="number" name="cantidad" min="1" required>
-                            <button type="submit" name="venta">Vender</button>
+                            <input class="form-control" type="hidden" name="id_producto" value="<?= $producto['id'] ?>">
+                            <label class="form-label" for="cantidad">Cantidad:</label>
+                            <input class="form-control" type="number" name="cantidad" min="1" required>
+                            <button class="btn btn-primary" type="submit" name="venta">Vender</button>
                         </form>
                     </td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
-
+    </div>
+    <div class = "container mt-5">
     <a href="ventas.php">Ir a la sección de ventas</a>
+    </div>
 </body>
 </html>

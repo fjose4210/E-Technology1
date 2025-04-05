@@ -31,19 +31,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>Crear Cuenta</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
 </head>
 <body>
-    <h1>Crear Cuenta</h1>
-    <?php if (isset($error)) echo "<p>$error</p>"; ?>
-    <?php if (isset($success)) echo "<p>$success</p>"; ?>
-
-    <form action="" method="POST">
-        <label for="username">Nombre de usuario:</label><br>
-        <input type="text" name="username" required><br>
-        <label for="password">Contraseña:</label><br>
-        <input type="password" name="password" required><br><br>
-        <button type="submit">Crear cuenta</button>
-    </form>
-    <p>Ya tienes cuenta? <a href="login.php">Inicia sesión aquí</a></p>
+    <div class = "container mt-5">
+        <h1>Crear Cuenta</h1>
+        <?php if (isset($error)):?>
+        <div class="alert alert-danger"><?php echo "<p>$error</p>"; ?></div>
+        <?php endif;?>
+        <?php if (isset($success)):?>
+        <div class="alert alert-success"><?php echo "<p>$success</p>"; ?></div>
+        <?php endif;?>
+        <form action="" method="POST">
+            <div class="mb-3">
+                <label class="form-label" for="username">Nombre de usuario:</label><br>
+                <input class="form-control" type="text" name="username" required><br>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="password">Contraseña:</label><br>
+                <input class="form-control" type="password" name="password" required><br><br>
+            </div>
+            <button class="btn btn-primary" type="submit">Crear cuenta</button>
+        </form>
+        <p>Ya tienes cuenta? <a href="login.php">Inicia sesión aquí</a></p>
+    </div>
 </body>
 </html>

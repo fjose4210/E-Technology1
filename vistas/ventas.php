@@ -40,13 +40,17 @@ $ventas = $pdo->query("SELECT * FROM ventas ORDER BY fecha DESC")->fetchAll();
 <head>
     <meta charset="UTF-8">
     <title>Ventas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
 </head>
 <body>
     <h1>Ventas</h1>
 
-    <?php if (isset($error)) echo "<p>$error</p>"; ?>
+    <?php if (isset($error)):?>
+    <div class="alert alert-danger"><?php echo "<p>$error</p>"; ?></div>
+    <?php endif;?>
+    <div class = "container mt-5">
     <h2>Historial de Ventas</h2>
-    <table border="1">
+    <table border="1" class="table table-bordered table-striped">
         <thead>
             <tr>
                 <th>Producto</th>
@@ -67,6 +71,6 @@ $ventas = $pdo->query("SELECT * FROM ventas ORDER BY fecha DESC")->fetchAll();
         </tbody>
     </table>
     <a href="inventario.php">Ir a la sección de inventario</a>
-
+    </div>
 </body>
 </html>
