@@ -66,6 +66,7 @@ $ventas = $pdo->query("SELECT * FROM ventas ORDER BY fecha DESC")->fetchAll();
             <?php endforeach; ?>
         </tbody>
     </table>
+    <a href="inventario.php">Ir a la sección de inventario</a>
 
 </body>
 </html>
