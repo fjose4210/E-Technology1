@@ -8,6 +8,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Venta
     if (isset($_POST['venta'])) {
         $id_producto = $_POST['id_producto'];
         $cantidad = $_POST['cantidad'];
@@ -44,6 +45,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         $success = "Producto agregado exitosamente.";
     }
+
+    // Realizar Restock (reposicion de productos)
+    if (isset($_POST['restock'])) {
+        $id_producto = $_POST['id_producto'];
+        $cantidad_restock = $_POST['cantidad_restock'];
+
+        // Obtener el producto
+        $stmt = $pdo->prepare("SELECT * FROM productos WHERE id = ?");
+        $stmt->execute([$id_producto]);
+        $producto = $stmt->fetch();
+
+        if ($producto) {
+            $nuevo_stock = $producto['cantidad'] + $cantidad_restock;
+
+            // Actualizar la cantidad del producto
+            $stmt = $pdo->prepare("UPDATE productos SET cantidad = ? WHERE id = ?");
+            $stmt->execute([$nuevo_stock, $id_producto]);
+
+            $success_restock = "Stock actualizado exitosamente.";
+        }
+    }
 }
 
 $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
@@ -60,7 +82,9 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
 
     <?php if (isset($error)) echo "<p>$error</p>"; ?>
     <?php if (isset($success)) echo "<p>$success</p>"; ?>
+    <?php if (isset($success_restock)) echo "<p>$success_restock</p>"; ?>
 
+    <!-- Formulario para agregar nuevo producto -->
     <h2>Agregar Producto</h2>
     <form method="POST">
         <label for="nombre">Nombre:</label><br>
@@ -72,6 +96,20 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
         <label for="precio">Precio:</label><br>
         <input type="number" name="precio" step="0.01" required><br><br>
         <button type="submit" name="agregar_producto">Agregar Producto</button>
+    </form>
+
+    <!-- Formulario para Restock (reposicion de productos) -->
+    <h2>Restock (Reposición de Stock)</h2>
+    <form method="POST">
+        <label for="id_producto">Producto:</label><br>
+        <select name="id_producto" required>
+            <?php foreach ($productos as $producto): ?>
+                <option value="<?= $producto['id'] ?>"><?= $producto['nombre'] ?></option>
+            <?php endforeach; ?>
+        </select><br>
+        <label for="cantidad_restock">Cantidad a Reponer:</label><br>
+        <input type="number" name="cantidad_restock" min="1" required><br><br>
+        <button type="submit" name="restock">Reponer Stock</button>
     </form>
 
     <h2>Buscar Producto</h2>
@@ -88,7 +126,7 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
                 <th>Categoría</th>
                 <th>Cantidad</th>
                 <th>Precio</th>
-                <th>Ventas</th>
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
