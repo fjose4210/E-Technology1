@@ -75,80 +75,229 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Inventario</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario - Sistema de Inventario</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
-    <h1>Inventario</h1>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="inventario.php">
+                <i class="fas fa-box-open me-2"></i>Sistema de Inventario
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="inventario.php">
+                            <i class="fas fa-boxes me-1"></i> Inventario
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="ventas.php">
+                            <i class="fas fa-shopping-cart me-1"></i> Ventas
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="login.php?logout=1">
+                            <i class="fas fa-sign-out-alt me-1"></i> Cerrar Sesión
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-    <?php if (isset($error)) echo "<p>$error</p>"; ?>
-    <?php if (isset($success)) echo "<p>$success</p>"; ?>
-    <?php if (isset($success_restock)) echo "<p>$success_restock</p>"; ?>
+    <div class="container py-4">
+        <!-- Alertas -->
+        <?php if (isset($error)): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i><?php echo $error; ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
+        
+        <?php if (isset($success)): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i><?php echo $success; ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
+        
+        <?php if (isset($success_restock)): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i><?php echo $success_restock; ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
 
-    <!-- Formulario para agregar nuevo producto -->
-    <h2>Agregar Producto</h2>
-    <form method="POST">
-        <label for="nombre">Nombre:</label><br>
-        <input type="text" name="nombre" required><br>
-        <label for="categoria">Categoría:</label><br>
-        <input type="text" name="categoria" required><br>
-        <label for="cantidad_producto">Cantidad:</label><br>
-        <input type="number" name="cantidad_producto" min="1" required><br>
-        <label for="precio">Precio:</label><br>
-        <input type="number" name="precio" step="0.01" required><br><br>
-        <button type="submit" name="agregar_producto">Agregar Producto</button>
-    </form>
-
-    <!-- Formulario para Restock (reposicion de productos) -->
-    <h2>Restock (Reposición de Stock)</h2>
-    <form method="POST">
-        <label for="id_producto">Producto:</label><br>
-        <select name="id_producto" required>
-            <?php foreach ($productos as $producto): ?>
-                <option value="<?= $producto['id'] ?>"><?= $producto['nombre'] ?></option>
-            <?php endforeach; ?>
-        </select><br>
-        <label for="cantidad_restock">Cantidad a Reponer:</label><br>
-        <input type="number" name="cantidad_restock" min="1" required><br><br>
-        <button type="submit" name="restock">Reponer Stock</button>
-    </form>
-
-    <h2>Buscar Producto</h2>
-    <form method="GET">
-        <input type="text" name="search" placeholder="Buscar..." value="<?= isset($_GET['search']) ? $_GET['search'] : '' ?>">
-        <button type="submit">Buscar</button>
-    </form>
-
-    <h2>Productos en Inventario</h2>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Producto</th>
-                <th>Categoría</th>
-                <th>Cantidad</th>
-                <th>Precio</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($productos as $producto): ?>
-                <tr>
-                    <td><?= $producto['nombre'] ?></td>
-                    <td><?= $producto['categoria'] ?></td>
-                    <td><?= $producto['cantidad'] ?></td>
-                    <td>$<?= number_format($producto['precio'], 2) ?></td>
-                    <td>
-                        <form method="POST" action="">
-                            <input type="hidden" name="id_producto" value="<?= $producto['id'] ?>">
-                            <label for="cantidad">Cantidad:</label>
-                            <input type="number" name="cantidad" min="1" required>
-                            <button type="submit" name="venta">Vender</button>
+        <div class="row">
+            <!-- Columna izquierda: Formularios -->
+            <div class="col-lg-4">
+                <!-- Formulario para agregar nuevo producto -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Agregar Producto</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST">
+                            <div class="mb-3">
+                                <label for="nombre" class="form-label">Nombre:</label>
+                                <input type="text" class="form-control" name="nombre" id="nombre" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="categoria" class="form-label">Categoría:</label>
+                                <input type="text" class="form-control" name="categoria" id="categoria" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="cantidad_producto" class="form-label">Cantidad:</label>
+                                <input type="number" class="form-control" name="cantidad_producto" id="cantidad_producto" min="1" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="precio" class="form-label">Precio:</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" name="precio" id="precio" step="0.01" required>
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" name="agregar_producto" class="btn btn-primary">
+                                    <i class="fas fa-plus-circle me-2"></i>Agregar Producto
+                                </button>
+                            </div>
                         </form>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+                    </div>
+                </div>
 
-    <a href="ventas.php">Ir a la sección de ventas</a>
+                <!-- Formulario para Restock -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-boxes me-2"></i>Reposición de Stock</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST">
+                            <div class="mb-3">
+                                <label for="id_producto" class="form-label">Producto:</label>
+                                <select name="id_producto" id="id_producto" class="form-select" required>
+                                    <?php foreach ($productos as $producto): ?>
+                                        <option value="<?= $producto['id'] ?>"><?= $producto['nombre'] ?> (Stock actual: <?= $producto['cantidad'] ?>)</option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="cantidad_restock" class="form-label">Cantidad a Reponer:</label>
+                                <input type="number" class="form-control" name="cantidad_restock" id="cantidad_restock" min="1" required>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" name="restock" class="btn btn-success">
+                                    <i class="fas fa-plus me-2"></i>Reponer Stock
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna derecha: Inventario -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>Productos en Inventario</h5>
+                        <form method="GET" class="d-flex">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="search" placeholder="Buscar producto..." value="<?= isset($_GET['search']) ? $_GET['search'] : '' ?>">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Categoría</th>
+                                        <th>Cantidad</th>
+                                        <th>Precio</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (count($productos) > 0): ?>
+                                        <?php foreach ($productos as $producto): ?>
+                                            <tr>
+                                                <td><?= $producto['nombre'] ?></td>
+                                                <td><?= $producto['categoria'] ?></td>
+                                                <td class="<?= $producto['cantidad'] < 5 ? 'low-stock' : '' ?>">
+                                                    <?= $producto['cantidad'] ?>
+                                                    <?php if ($producto['cantidad'] < 5): ?>
+                                                        <i class="fas fa-exclamation-triangle ms-1" title="Stock bajo"></i>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td>$<?= number_format($producto['precio'], 2) ?></td>
+                                                <td>
+                                                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#ventaModal<?= $producto['id'] ?>">
+                                                        <i class="fas fa-shopping-cart me-1"></i> Vender
+                                                    </button>
+                                                    
+                                                    <!-- Modal de Venta -->
+                                                    <div class="modal fade" id="ventaModal<?= $producto['id'] ?>" tabindex="-1" aria-hidden="true">
+                                                        <div class="modal-dialog">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title">Vender <?= $producto['nombre'] ?></h5>
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                </div>
+                                                                <form method="POST">
+                                                                    <div class="modal-body">
+                                                                        <input type="hidden" name="id_producto" value="<?= $producto['id'] ?>">
+                                                                        <p>Stock disponible: <strong><?= $producto['cantidad'] ?></strong></p>
+                                                                        <p>Precio unitario: <strong>$<?= number_format($producto['precio'], 2) ?></strong></p>
+                                                                        
+                                                                        <div class="mb-3">
+                                                                            <label for="cantidad<?= $producto['id'] ?>" class="form-label">Cantidad a vender:</label>
+                                                                            <input type="number" class="form-control" id="cantidad<?= $producto['id'] ?>" name="cantidad" min="1" max="<?= $producto['cantidad'] ?>" required>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                                        <button type="submit" name="venta" class="btn btn-primary">Confirmar Venta</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="5" class="text-center py-3">No se encontraron productos</td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
