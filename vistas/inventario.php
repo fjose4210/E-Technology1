@@ -77,17 +77,21 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventario - Sistema de Inventario</title>
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="styles/main.css">
+    <style>
+    body {
+        background: linear-gradient(135deg, #0f2027, #2c5364, #00c9a7);
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        font-family: 'Poppins', sans-serif;
+    }
+</style>
 </head>
 <body>
-    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand" href="inventario.php">
@@ -119,7 +123,6 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
     </nav>
 
     <div class="container py-4">
-        <!-- Alertas -->
         <?php if (isset($error)): ?>
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <i class="fas fa-exclamation-circle me-2"></i><?php echo $error; ?>
@@ -142,9 +145,9 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
         <?php endif; ?>
 
         <div class="row">
-            <!-- Columna izquierda: Formularios -->
+            <!--Columna izquierda: Formularios-->
             <div class="col-lg-4">
-                <!-- Formulario para agregar nuevo producto -->
+                <!--Formulario para agregar nuevo producto-->
                 <div class="card mb-4">
                     <div class="card-header">
                         <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Agregar Producto</h5>
@@ -179,7 +182,7 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
                     </div>
                 </div>
 
-                <!-- Formulario para Restock -->
+                <!--Formulario para Restock-->
                 <div class="card">
                     <div class="card-header">
                         <h5 class="mb-0"><i class="fas fa-boxes me-2"></i>Reposición de Stock</h5>
@@ -208,12 +211,9 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
                 </div>
             </div>
 
-            <!-- Columna derecha: Inventario -->
+            <!--Columna derecha: Inventario-->
             <div class="col-lg-8">
             <div class="d-flex justify-content-end mb-2">
-            <a href="ventas.php" class="btn btn-primary">
-            <i class="fas fa-shopping-cart me-2"></i>Ir a la sección de ventas
-            </a>
             </div>
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
@@ -257,7 +257,7 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
                                                         <i class="fas fa-shopping-cart me-1"></i> Vender
                                                     </button>
                                                     
-                                                    <!-- Modal de Venta -->
+                                                    <!--Modal de Venta-->
                                                     <div class="modal fade" id="ventaModal<?= $producto['id'] ?>" tabindex="-1" aria-hidden="true">
                                                         <div class="modal-dialog">
                                                             <div class="modal-content">
@@ -300,7 +300,6 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
             </div>
         </div>
     </div>
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
