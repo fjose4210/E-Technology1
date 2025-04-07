@@ -210,6 +210,11 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
 
             <!-- Columna derecha: Inventario -->
             <div class="col-lg-8">
+            <div class="d-flex justify-content-end mb-2">
+            <a href="ventas.php" class="btn btn-primary">
+            <i class="fas fa-shopping-cart me-2"></i>Ir a la sección de ventas
+            </a>
+            </div>
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>Productos en Inventario</h5>
@@ -295,7 +300,6 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
             </div>
         </div>
     </div>
-
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
