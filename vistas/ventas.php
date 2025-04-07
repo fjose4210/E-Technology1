@@ -33,6 +33,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 
 $ventas = $pdo->query("SELECT * FROM ventas ORDER BY fecha DESC")->fetchAll();
+$stmt = $pdo->query("SELECT SUM(total) AS total_ventas FROM ventas");
+$result = $stmt->fetch();
+$total_ventas = $result['total_ventas'] ?? 0;
+
+$stmt = $pdo->query("SELECT SUM(cantidad) AS total_productos FROM ventas");
+$result = $stmt->fetch();
+$total_productos = $result['total_productos'] ?? 0;
 ?>
 
 <!DOCTYPE html>
