@@ -7,37 +7,38 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (isset($_POST['venta'])) {
-        $id_producto = $_POST['id_producto'];
-        $cantidad = $_POST['cantidad'];
+//Capturar fechas del filtro
+$fecha_inicio = $_GET['fecha_inicio'] ?? '';
+$fecha_fin = $_GET['fecha_fin'] ?? '';
 
-        $stmt = $pdo->prepare("SELECT * FROM productos WHERE id = ?");
-        $stmt->execute([$id_producto]);
-        $producto = $stmt->fetch();
+$where = "WHERE 1";
+$params = [];
 
-        if ($producto && $producto['cantidad'] >= $cantidad) {
-            $nuevo_stock = $producto['cantidad'] - $cantidad;
-
-            // Actualizar el inventario
-            $pdo->prepare("UPDATE productos SET cantidad = ? WHERE id = ?")->execute([$nuevo_stock, $id_producto]);
-
-            // Registrar la venta
-            $total = $producto['precio'] * $cantidad;
-            $stmt = $pdo->prepare("INSERT INTO ventas (id_producto, cantidad, fecha, total) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$id_producto, $cantidad, date('Y-m-d H:i:s'), $total]);
-        } else {
-            $error = "No hay suficiente stock para esta venta.";
-        }
-    }
+if (!empty($fecha_inicio)) {
+    $where .= " AND fecha >= ?";
+    $params[] = $fecha_inicio . " 00:00:00";
 }
 
-$ventas = $pdo->query("SELECT * FROM ventas ORDER BY fecha DESC")->fetchAll();
-$stmt = $pdo->query("SELECT SUM(total) AS total_ventas FROM ventas");
+if (!empty($fecha_fin)) {
+    $where .= " AND fecha <= ?";
+    $params[] = $fecha_fin . " 23:59:59";
+}
+
+$query = "SELECT * FROM ventas $where ORDER BY fecha DESC";
+$stmt = $pdo->prepare($query);
+$stmt->execute($params);
+$ventas = $stmt->fetchAll();
+
+//Total de ventas
+$queryTotal = "SELECT SUM(total) AS total_ventas FROM ventas $where";
+$stmt = $pdo->prepare($queryTotal);
+$stmt->execute($params);
 $result = $stmt->fetch();
 $total_ventas = $result['total_ventas'] ?? 0;
 
-$stmt = $pdo->query("SELECT SUM(cantidad) AS total_productos FROM ventas");
+$queryCant = "SELECT SUM(cantidad) AS total_productos FROM ventas $where";
+$stmt = $pdo->prepare($queryCant);
+$stmt->execute($params);
 $result = $stmt->fetch();
 $total_productos = $result['total_productos'] ?? 0;
 ?>
