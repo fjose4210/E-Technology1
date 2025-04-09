@@ -24,7 +24,13 @@ if (!empty($fecha_fin)) {
     $params[] = $fecha_fin . " 23:59:59";
 }
 
-$query = "SELECT * FROM ventas $where ORDER BY fecha DESC";
+$query = "
+    SELECT ventas.*, productos.nombre AS nombre_producto
+    FROM ventas
+    JOIN productos ON ventas.id_producto = productos.id
+    $where
+    ORDER BY ventas.fecha DESC
+";
 $stmt = $pdo->prepare($query);
 $stmt->execute($params);
 $ventas = $stmt->fetchAll();
