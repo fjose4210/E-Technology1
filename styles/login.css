@@ -1,0 +1,72 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #0f2027, #2c5364, #00c9a7);
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+}
+
+.login-card {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 30px;
+    width: 100%;
+    max-width: 400px;
+    color: white;
+}
+
+.form-control {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: white;
+}
+
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.input-group-text {
+    background: transparent;
+    border: none;
+    color: white;
+}
+
+.btn-primary {
+    background-color: #ffffff;
+    color: #6e8efb;
+    font-weight: 600;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #f1f1f1;
+    color: #6e8efb;
+}
+
+a {
+    color: #fff;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.user-icon {
+    background: linear-gradient(135deg, #8881f1, #a777e3);
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.alert {
+    font-size: 0.9rem;
+}

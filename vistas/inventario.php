@@ -81,15 +81,7 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="styles/main.css">
-    <style>
-    body {
-        background: linear-gradient(135deg, #0f2027, #2c5364, #00c9a7);
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-        font-family: 'Poppins', sans-serif;
-    }
-</style>
+    <link rel="stylesheet" href="styles/ventas.css">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark">
