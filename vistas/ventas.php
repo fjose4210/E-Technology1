@@ -8,8 +8,9 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 //Capturar fechas del filtro
-$fecha_inicio = $_GET['fecha_inicio'] ?? '';
-$fecha_fin = $_GET['fecha_fin'] ?? '';
+$fecha_inicio = isset($_GET['fecha_inicio']) ? $_GET['fecha_inicio'] : '';
+$fecha_fin = isset($_GET['fecha_fin']) ? $_GET['fecha_fin'] : '';
+
 
 $where = "WHERE 1";
 $params = [];
@@ -34,13 +35,13 @@ $queryTotal = "SELECT SUM(total) AS total_ventas FROM ventas $where";
 $stmt = $pdo->prepare($queryTotal);
 $stmt->execute($params);
 $result = $stmt->fetch();
-$total_ventas = $result['total_ventas'] ?? 0;
+$total_ventas = isset($result['total_ventas']) ? $result['total_ventas'] : 0;
 
 $queryCant = "SELECT SUM(cantidad) AS total_productos FROM ventas $where";
 $stmt = $pdo->prepare($queryCant);
 $stmt->execute($params);
 $result = $stmt->fetch();
-$total_productos = $result['total_productos'] ?? 0;
+$total_productos = isset($result['total_productos']) ? $result['total_productos'] : 0;
 ?>
 
 <!DOCTYPE html>
@@ -53,15 +54,7 @@ $total_productos = $result['total_productos'] ?? 0;
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="styles/main.css">
-    <style>
-    body {
-        background: linear-gradient(135deg, #0f2027, #2c5364, #00c9a7);
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-        font-family: 'Poppins', sans-serif;
-    }
-</style>
+    <link rel="stylesheet" href="styles/ventas.css">
 </head>
 <body>
     <!-- Navbar -->
@@ -178,7 +171,7 @@ $total_productos = $result['total_productos'] ?? 0;
                                 <?php foreach ($ventas as $venta): ?>
                                     <tr>
                                         <td><?= $venta['id'] ?></td>
-                                        <td><?= $venta['nombre_producto'] ?? 'Producto #'.$venta['id_producto'] ?></td>
+                                        <td><?= isset($venta['nombre_producto']) ? $venta['nombre_producto'] : 'Producto #'.$venta['id_producto'] ?></td>
                                         <td><?= $venta['cantidad'] ?></td>
                                         <td>$<?= number_format($venta['total'], 2) ?></td>
                                         <td><?= date('d/m/Y H:i', strtotime($venta['fecha'])) ?></td>
