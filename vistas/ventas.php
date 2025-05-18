@@ -7,32 +7,46 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (isset($_POST['venta'])) {
-        $id_producto = $_POST['id_producto'];
-        $cantidad = $_POST['cantidad'];
+//Capturar fechas del filtro
+$fecha_inicio = $_GET['fecha_inicio'] ?? '';
+$fecha_fin = $_GET['fecha_fin'] ?? '';
 
-        $stmt = $pdo->prepare("SELECT * FROM productos WHERE id = ?");
-        $stmt->execute([$id_producto]);
-        $producto = $stmt->fetch();
+$where = "WHERE 1";
+$params = [];
 
-        if ($producto && $producto['cantidad'] >= $cantidad) {
-            $nuevo_stock = $producto['cantidad'] - $cantidad;
-
-            // Actualizar el inventario
-            $pdo->prepare("UPDATE productos SET cantidad = ? WHERE id = ?")->execute([$nuevo_stock, $id_producto]);
-
-            // Registrar la venta
-            $total = $producto['precio'] * $cantidad;
-            $stmt = $pdo->prepare("INSERT INTO ventas (id_producto, cantidad, fecha, total) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$id_producto, $cantidad, date('Y-m-d H:i:s'), $total]);
-        } else {
-            $error = "No hay suficiente stock para esta venta.";
-        }
-    }
+if (!empty($fecha_inicio)) {
+    $where .= " AND fecha >= ?";
+    $params[] = $fecha_inicio . " 00:00:00";
 }
 
-$ventas = $pdo->query("SELECT * FROM ventas ORDER BY fecha DESC")->fetchAll();
+if (!empty($fecha_fin)) {
+    $where .= " AND fecha <= ?";
+    $params[] = $fecha_fin . " 23:59:59";
+}
+
+$query = "
+    SELECT ventas.*, productos.nombre AS nombre_producto
+    FROM ventas
+    JOIN productos ON ventas.id_producto = productos.id
+    $where
+    ORDER BY ventas.fecha DESC
+";
+$stmt = $pdo->prepare($query);
+$stmt->execute($params);
+$ventas = $stmt->fetchAll();
+
+//Total de ventas
+$queryTotal = "SELECT SUM(total) AS total_ventas FROM ventas $where";
+$stmt = $pdo->prepare($queryTotal);
+$stmt->execute($params);
+$result = $stmt->fetch();
+$total_ventas = $result['total_ventas'] ?? 0;
+
+$queryCant = "SELECT SUM(cantidad) AS total_productos FROM ventas $where";
+$stmt = $pdo->prepare($queryCant);
+$stmt->execute($params);
+$result = $stmt->fetch();
+$total_productos = $result['total_productos'] ?? 0;
 ?>
 
 <!DOCTYPE html>
@@ -41,14 +55,19 @@ $ventas = $pdo->query("SELECT * FROM ventas ORDER BY fecha DESC")->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ventas - Sistema de Inventario</title>
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="styles/main.css">
+    <style>
+    body {
+        background: linear-gradient(135deg, #0f2027, #2c5364, #00c9a7);
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        font-family: 'Poppins', sans-serif;
+    }
+</style>
 </head>
 <body>
     <!-- Navbar -->
@@ -70,6 +89,11 @@ $ventas = $pdo->query("SELECT * FROM ventas ORDER BY fecha DESC")->fetchAll();
                     <li class="nav-item">
                         <a class="nav-link active" href="ventas.php">
                             <i class="fas fa-shopping-cart me-1"></i> Ventas
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="perfil.php">
+                            <i class="fas fa-user me-1"></i> Perfil
                         </a>
                     </li>
                     <li class="nav-item">
@@ -192,4 +216,3 @@ $ventas = $pdo->query("SELECT * FROM ventas ORDER BY fecha DESC")->fetchAll();
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
