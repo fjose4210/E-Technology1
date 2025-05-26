@@ -92,6 +92,11 @@ $total_productos = $result['total_productos'] ?? 0;
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="perfil.php">
+                            <i class="fas fa-user me-1"></i> Perfil
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="login.php?logout=1">
                             <i class="fas fa-sign-out-alt me-1"></i> Cerrar Sesión
                         </a>
@@ -211,4 +216,3 @@ $total_productos = $result['total_productos'] ?? 0;
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

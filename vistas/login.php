@@ -2,6 +2,13 @@
 session_start();
 include '../config.php';
 
+// Manejar cierre de sesión
+if (isset($_GET['logout'])) {
+    session_destroy();
+    header("Location: login.php");
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = $_POST['username'];
     $password = $_POST['password'];
