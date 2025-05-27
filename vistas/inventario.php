@@ -6,6 +6,16 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
 }
+// Editar Precio de Venta
+if (isset($_POST['editar_precio'])) {
+    $id_producto_editar = $_POST['id_producto_editar'];
+    $nuevo_precio = $_POST['nuevo_precio'];
+
+    $stmt = $pdo->prepare("UPDATE productos SET precio = ? WHERE id = ?");
+    $stmt->execute([$nuevo_precio, $id_producto_editar]);
+
+    $success = "Precio actualizado correctamente.";
+}
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Venta
@@ -329,11 +339,41 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
                                                 <td class="<?= $ganancia_class ?>">
                                                     $<?= number_format($ganancia_unitaria, 2) ?>
                                                 </td>
-                                                <td>
+                                                <td class="d-flex gap-2">
                                                     <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#ventaModal<?= $producto['id'] ?>">
                                                         <i class="fas fa-shopping-cart me-1"></i> Vender
                                                     </button>
-                                                    
+													    <!-- Botón Editar -->
+													<button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editarModal<?= $producto['id'] ?>">
+														<i class="fas fa-edit me-2"></i> Editar
+													</button>
+                                                    <!-- Modal para Editar Precio -->
+													<div class="modal fade" id="editarModal<?= $producto['id'] ?>" tabindex="-1" aria-hidden="true">
+														<div class="modal-dialog">
+															<div class="modal-content">
+															<form method="POST">
+															<div class="modal-header">
+															<h5 class="modal-title">Editar Precio de <?= $producto['nombre'] ?></h5>
+															<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+													</div>
+													<div class="modal-body">
+														<input type="hidden" name="id_producto_editar" value="<?= $producto['id'] ?>">
+														<div class="mb-3">
+														<label for="nuevo_precio<?= $producto['id'] ?>" class="form-label">Nuevo Precio de Venta:</label>
+													<div class="input-group">
+														<span class="input-group-text">$</span>
+														<input type="number" step="0.01" min="0" class="form-control" name="nuevo_precio" id="nuevo_precio<?= $producto['id'] ?>" value="<?= $producto['precio'] ?>" required>
+														</div>
+													</div>
+												</div>
+														<div class="modal-footer">
+														<button type="submit" name="editar_precio" class="btn btn-warning">Guardar Cambios</button>
+														<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+													</div>
+														</form>
+												</div>
+												</div>
+												</div>
                                                     <!--Modal de Venta-->
                                                     <div class="modal fade" id="ventaModal<?= $producto['id'] ?>" tabindex="-1" aria-hidden="true">
                                                         <div class="modal-dialog">
