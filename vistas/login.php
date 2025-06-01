@@ -117,7 +117,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="card login-card">
         <div class="card-header text-center py-4 bg-transparent border-0">
             <div class="d-flex flex-column align-items-center">
-
                 <h4 class="mb-0 text-white">
                     <i class="fas fa-box-open me-2"></i>Sistema de Inventario
                 </h4>
