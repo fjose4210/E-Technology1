@@ -25,8 +25,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             //Registrar la venta
             $total = $producto['precio'] * $cantidad;
-            $stmt = $pdo->prepare("INSERT INTO ventas (id_producto, cantidad, fecha, total) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$id_producto, $cantidad, date('Y-m-d H:i:s'), $total]);
+            $stmt = $pdo->prepare("INSERT INTO ventas (id_producto, id_usuario, cantidad, fecha, total) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$id_producto, $_SESSION['user_id'], $cantidad, date('Y-m-d H:i:s'), $total]);
+            
+            $success = "Venta registrada exitosamente.";
         } else {
             $error = "No hay suficiente stock para esta venta.";
         }
@@ -38,18 +40,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $categoria = $_POST['categoria'];
         $cantidad = $_POST['cantidad_producto'];
         $precio = $_POST['precio'];
+        $precio_compra = $_POST['precio_compra'];
 
         // Insertar el nuevo producto en la base de datos
-        $stmt = $pdo->prepare("INSERT INTO productos (nombre, categoria, cantidad, precio) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$nombre, $categoria, $cantidad, $precio]);
+        $stmt = $pdo->prepare("INSERT INTO productos (nombre, categoria, cantidad, precio, precio_compra) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute([$nombre, $categoria, $cantidad, $precio, $precio_compra]);
+        
+        $producto_id = $pdo->lastInsertId();
+        
+        // Registrar la compra inicial
+        $total_compra = $precio_compra * $cantidad;
+        $stmt = $pdo->prepare("INSERT INTO compras (id_producto, id_usuario, cantidad, precio_unitario, total) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute([$producto_id, $_SESSION['user_id'], $cantidad, $precio_compra, $total_compra]);
 
-        $success = "Producto agregado exitosamente.";
+        $success = "Producto agregado exitosamente. Compra registrada: $" . number_format($total_compra, 2);
     }
 
     // Realizar Restock (reposicion de productos)
     if (isset($_POST['restock'])) {
         $id_producto = $_POST['id_producto'];
         $cantidad_restock = $_POST['cantidad_restock'];
+        $precio_compra_restock = $_POST['precio_compra_restock'];
 
         // Obtener el producto
         $stmt = $pdo->prepare("SELECT * FROM productos WHERE id = ?");
@@ -58,12 +69,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         if ($producto) {
             $nuevo_stock = $producto['cantidad'] + $cantidad_restock;
+            $total_compra = $precio_compra_restock * $cantidad_restock;
 
-            // Actualizar la cantidad del producto
-            $stmt = $pdo->prepare("UPDATE productos SET cantidad = ? WHERE id = ?");
-            $stmt->execute([$nuevo_stock, $id_producto]);
+            // Actualizar la cantidad del producto y el precio de compra promedio
+            $stmt = $pdo->prepare("UPDATE productos SET cantidad = ?, precio_compra = ? WHERE id = ?");
+            $stmt->execute([$nuevo_stock, $precio_compra_restock, $id_producto]);
+            
+            // Registrar la compra
+            $stmt = $pdo->prepare("INSERT INTO compras (id_producto, id_usuario, cantidad, precio_unitario, total) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$id_producto, $_SESSION['user_id'], $cantidad_restock, $precio_compra_restock, $total_compra]);
 
-            $success_restock = "Stock actualizado exitosamente.";
+            $success_restock = "Stock actualizado exitosamente. Gasto en compra: $" . number_format($total_compra, 2);
         }
     }
 }
@@ -89,6 +105,25 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
         background-attachment: fixed;
         font-family: 'Poppins', sans-serif;
     }
+    
+    .profit-info {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 10px;
+        color: white;
+    }
+    
+    .profit-positive {
+        color: #32cd32;
+        font-weight: bold;
+    }
+    
+    .profit-negative {
+        color: #ff6b6b;
+        font-weight: bold;
+    }
 </style>
 </head>
 <body>
@@ -110,6 +145,11 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
                     <li class="nav-item">
                         <a class="nav-link" href="ventas.php">
                             <i class="fas fa-shopping-cart me-1"></i> Ventas
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="reportes.php">
+                            <i class="fas fa-chart-bar me-1"></i> Reportes
                         </a>
                     </li>
                     <li class="nav-item">
@@ -172,11 +212,24 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
                                 <input type="number" class="form-control" name="cantidad_producto" id="cantidad_producto" min="1" required>
                             </div>
                             <div class="mb-3">
-                                <label for="precio" class="form-label">Precio:</label>
+                                <label for="precio_compra" class="form-label">Precio de Compra (Unitario):</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" name="precio_compra" id="precio_compra" step="0.01" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="precio" class="form-label">Precio de Venta:</label>
                                 <div class="input-group">
                                     <span class="input-group-text">$</span>
                                     <input type="number" class="form-control" name="precio" id="precio" step="0.01" required>
                                 </div>
+                            </div>
+                            <div class="profit-info">
+                                <small>
+                                    <i class="fas fa-calculator me-1"></i>
+                                    <span id="ganancia-unitaria">Ganancia por unidad: $0.00</span>
+                                </small>
                             </div>
                             <div class="d-grid">
                                 <button type="submit" name="agregar_producto" class="btn btn-primary">
@@ -197,14 +250,30 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
                             <div class="mb-3">
                                 <label for="id_producto" class="form-label">Producto:</label>
                                 <select name="id_producto" id="id_producto" class="form-select" required>
+                                    <option value="">Seleccionar producto...</option>
                                     <?php foreach ($productos as $producto): ?>
-                                        <option value="<?= $producto['id'] ?>"><?= $producto['nombre'] ?> (Stock actual: <?= $producto['cantidad'] ?>)</option>
+                                        <option value="<?= $producto['id'] ?>" data-precio-compra="<?= $producto['precio_compra'] ?>">
+                                            <?= $producto['nombre'] ?> (Stock actual: <?= $producto['cantidad'] ?>)
+                                        </option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
                             <div class="mb-3">
                                 <label for="cantidad_restock" class="form-label">Cantidad a Reponer:</label>
                                 <input type="number" class="form-control" name="cantidad_restock" id="cantidad_restock" min="1" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="precio_compra_restock" class="form-label">Precio de Compra (Unitario):</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" name="precio_compra_restock" id="precio_compra_restock" step="0.01" required>
+                                </div>
+                            </div>
+                            <div class="profit-info">
+                                <small>
+                                    <i class="fas fa-calculator me-1"></i>
+                                    <span id="total-compra">Total de compra: $0.00</span>
+                                </small>
                             </div>
                             <div class="d-grid">
                                 <button type="submit" name="restock" class="btn btn-success">
@@ -218,8 +287,6 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
 
             <!--Columna derecha: Inventario-->
             <div class="col-lg-8">
-            <div class="d-flex justify-content-end mb-2">
-            </div>
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>Productos en Inventario</h5>
@@ -240,13 +307,19 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
                                         <th>Producto</th>
                                         <th>Categoría</th>
                                         <th>Cantidad</th>
-                                        <th>Precio</th>
+                                        <th>P. Compra</th>
+                                        <th>P. Venta</th>
+                                        <th>Ganancia/U</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php if (count($productos) > 0): ?>
                                         <?php foreach ($productos as $producto): ?>
+                                            <?php 
+                                            $ganancia_unitaria = $producto['precio'] - $producto['precio_compra'];
+                                            $ganancia_class = $ganancia_unitaria > 0 ? 'profit-positive' : 'profit-negative';
+                                            ?>
                                             <tr>
                                                 <td><?= $producto['nombre'] ?></td>
                                                 <td><?= $producto['categoria'] ?></td>
@@ -256,7 +329,11 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
                                                         <i class="fas fa-exclamation-triangle ms-1" title="Stock bajo"></i>
                                                     <?php endif; ?>
                                                 </td>
+                                                <td>$<?= number_format($producto['precio_compra'], 2) ?></td>
                                                 <td>$<?= number_format($producto['precio'], 2) ?></td>
+                                                <td class="<?= $ganancia_class ?>">
+                                                    $<?= number_format($ganancia_unitaria, 2) ?>
+                                                </td>
                                                 <td>
                                                     <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#ventaModal<?= $producto['id'] ?>">
                                                         <i class="fas fa-shopping-cart me-1"></i> Vender
@@ -275,10 +352,18 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
                                                                         <input type="hidden" name="id_producto" value="<?= $producto['id'] ?>">
                                                                         <p>Stock disponible: <strong><?= $producto['cantidad'] ?></strong></p>
                                                                         <p>Precio unitario: <strong>$<?= number_format($producto['precio'], 2) ?></strong></p>
+                                                                        <p>Costo unitario: <strong>$<?= number_format($producto['precio_compra'], 2) ?></strong></p>
+                                                                        <p class="<?= $ganancia_class ?>">Ganancia por unidad: <strong>$<?= number_format($ganancia_unitaria, 2) ?></strong></p>
                                                                         
                                                                         <div class="mb-3">
                                                                             <label for="cantidad<?= $producto['id'] ?>" class="form-label">Cantidad a vender:</label>
-                                                                            <input type="number" class="form-control" id="cantidad<?= $producto['id'] ?>" name="cantidad" min="1" max="<?= $producto['cantidad'] ?>" required>
+                                                                            <input type="number" class="form-control cantidad-venta" id="cantidad<?= $producto['id'] ?>" name="cantidad" min="1" max="<?= $producto['cantidad'] ?>" data-ganancia="<?= $ganancia_unitaria ?>" required>
+                                                                        </div>
+                                                                        
+                                                                        <div class="profit-info">
+                                                                            <small>
+                                                                                <span id="ganancia-total<?= $producto['id'] ?>">Ganancia total: $0.00</span>
+                                                                            </small>
                                                                         </div>
                                                                     </div>
                                                                     <div class="modal-footer">
@@ -294,7 +379,7 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
                                         <?php endforeach; ?>
                                     <?php else: ?>
                                         <tr>
-                                            <td colspan="5" class="text-center py-3">No se encontraron productos</td>
+                                            <td colspan="7" class="text-center py-3">No se encontraron productos</td>
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>
@@ -305,6 +390,59 @@ $productos = $pdo->query("SELECT * FROM productos")->fetchAll();
             </div>
         </div>
     </div>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Calcular ganancia unitaria en tiempo real
+        document.getElementById('precio_compra').addEventListener('input', calcularGanancia);
+        document.getElementById('precio').addEventListener('input', calcularGanancia);
+        
+        function calcularGanancia() {
+            const precioCompra = parseFloat(document.getElementById('precio_compra').value) || 0;
+            const precioVenta = parseFloat(document.getElementById('precio').value) || 0;
+            const ganancia = precioVenta - precioCompra;
+            
+            const gananciaElement = document.getElementById('ganancia-unitaria');
+            gananciaElement.textContent = `Ganancia por unidad: $${ganancia.toFixed(2)}`;
+            gananciaElement.className = ganancia > 0 ? 'profit-positive' : 'profit-negative';
+        }
+        
+        // Calcular total de compra en restock
+        document.getElementById('cantidad_restock').addEventListener('input', calcularTotalCompra);
+        document.getElementById('precio_compra_restock').addEventListener('input', calcularTotalCompra);
+        
+        function calcularTotalCompra() {
+            const cantidad = parseFloat(document.getElementById('cantidad_restock').value) || 0;
+            const precio = parseFloat(document.getElementById('precio_compra_restock').value) || 0;
+            const total = cantidad * precio;
+            
+            document.getElementById('total-compra').textContent = `Total de compra: $${total.toFixed(2)}`;
+        }
+        
+        // Autocompletar precio de compra en restock
+        document.getElementById('id_producto').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const precioCompra = selectedOption.getAttribute('data-precio-compra');
+            if (precioCompra) {
+                document.getElementById('precio_compra_restock').value = precioCompra;
+                calcularTotalCompra();
+            }
+        });
+        
+        // Calcular ganancia total en modal de venta
+        document.querySelectorAll('.cantidad-venta').forEach(input => {
+            input.addEventListener('input', function() {
+                const cantidad = parseFloat(this.value) || 0;
+                const gananciaUnitaria = parseFloat(this.getAttribute('data-ganancia')) || 0;
+                const gananciaTotal = cantidad * gananciaUnitaria;
+                const productId = this.id.replace('cantidad', '');
+                
+                const gananciaElement = document.getElementById('ganancia-total' + productId);
+                gananciaElement.textContent = `Ganancia total: $${gananciaTotal.toFixed(2)}`;
+                gananciaElement.className = gananciaTotal > 0 ? 'profit-positive' : 'profit-negative';
+            });
+        });
+    </script>
 </body>
 </html>

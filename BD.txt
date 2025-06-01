@@ -3,37 +3,70 @@ CREATE DATABASE IF NOT EXISTS etecnology;
 
 USE etecnology;
 
--- Tabla de usuarios 
-CREATE TABLE IF NOT EXISTS usuarios (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(100) NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    rol ENUM('admin', 'vendedor') NOT NULL
+USE `etecnology`;
+
+-- Tabla de usuarios
+DROP TABLE IF EXISTS `usuarios`;
+CREATE TABLE IF NOT EXISTS `usuarios` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `username` varchar(100) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `rol` enum('admin','vendedor') NOT NULL,
+  `nombre` varchar(100) DEFAULT NULL,
+  `apellido` varchar(100) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `telefono` varchar(20) DEFAULT NULL,
+  `foto` varchar(255) DEFAULT 'default.jpg',
+  `fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
 );
 
 -- Tabla de productos
-CREATE TABLE IF NOT EXISTS productos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    categoria VARCHAR(100) NOT NULL,
-    cantidad INT NOT NULL,
-    precio DECIMAL(10, 2) NOT NULL
+DROP TABLE IF EXISTS `productos`;
+CREATE TABLE IF NOT EXISTS `productos` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(100) NOT NULL,
+  `categoria` varchar(100) NOT NULL,
+  `cantidad` int NOT NULL,
+  `precio` decimal(10,2) NOT NULL,
+  `precio_compra` decimal(10,2) DEFAULT '0.00',
+  PRIMARY KEY (`id`)
 );
 
--- Crear tabla de ventas (para registrar las ventas)
-CREATE TABLE IF NOT EXISTS ventas (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    id_producto INT,
-    cantidad INT NOT NULL,
-    fecha DATE NOT NULL,
-    total DECIMAL(10, 2) NOT NULL,
-    FOREIGN KEY (id_producto) REFERENCES productos(id)
+-- Tabla de ventas
+DROP TABLE IF EXISTS `ventas`;
+CREATE TABLE IF NOT EXISTS `ventas` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `id_producto` int DEFAULT NULL,
+  `cantidad` int NOT NULL,
+  `fecha` date NOT NULL,
+  `total` decimal(10,2) NOT NULL,
+  `id_usuario` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `id_producto` (`id_producto`),
+  KEY `id_usuario` (`id_usuario`)
 );
 
--- Tabla de egresos 
-CREATE TABLE IF NOT EXISTS egresos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    descripcion VARCHAR(255) NOT NULL,
-    monto DECIMAL(10, 2) NOT NULL,
-    fecha DATE NOT NULL
+-- Tabla de egresos
+DROP TABLE IF EXISTS `egresos`;
+CREATE TABLE IF NOT EXISTS `egresos` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `descripcion` varchar(255) NOT NULL,
+  `monto` decimal(10,2) NOT NULL,
+  `fecha` date NOT NULL,
+  PRIMARY KEY (`id`)
 );
+
+CREATE TABLE IF NOT EXISTS `compras` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `id_producto` int NOT NULL,
+  `id_usuario` int DEFAULT NULL,
+  `cantidad` int NOT NULL,
+  `precio_unitario` decimal(10,2) NOT NULL,
+  `total` decimal(10,2) NOT NULL,
+  `fecha` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `id_producto` (`id_producto`),
+  KEY `id_usuario` (`id_usuario`)
+);
+
