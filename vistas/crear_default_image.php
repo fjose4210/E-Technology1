@@ -13,10 +13,6 @@ imagefilledrectangle($image, 0, 0, $width, $height, $background);
 
 // Añadir texto "Usuario"
 $font_size = 5;
-$text = "  0, 0, $width, $height, $background);
-
-// Añadir texto "Usuario"
-$font_size = 5;
 $text = "Usuario";
 $text_width = imagefontwidth($font_size) * strlen($text);
 $text_height = imagefontheight($font_size);

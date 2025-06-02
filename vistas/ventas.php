@@ -182,6 +182,11 @@ usort($transacciones, function($a, $b) {
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="reportes.php">
+                            <i class="fas fa-chart-bar me-1"></i> Reportes
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="perfil.php">
                             <i class="fas fa-user me-1"></i> Perfil
                         </a>
